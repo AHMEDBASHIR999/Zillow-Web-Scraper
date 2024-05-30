@@ -41,23 +41,23 @@ def press_key_multiple_times(driver, key, times):
 def apply_newest_filter(driver):
     try:
         body = driver.find_element(By.TAG_NAME, 'body')
-        for _ in range(19): # Press Space Button 19 time
+        for _ in range(19):
             body.send_keys(Keys.TAB)
             time.sleep(0.1)
         time.sleep(2)
         
         action = ActionChains(driver)
-        action.key_down(Keys.SPACE).perform()  # Press Space Button 1 time
+        action.key_down(Keys.SPACE).perform()
         time.sleep(0.5)
         action.key_up(Keys.SPACE).perform()
         time.sleep(2)
         
         for _ in range(4):
-            body.send_keys(Keys.TAB)  # Press TAB Button 4 time
+            body.send_keys(Keys.TAB)
             time.sleep(0.1)
         time.sleep(1)
         
-        action.key_down(Keys.ENTER).perform() # Press Enter Button 1 time
+        action.key_down(Keys.ENTER).perform()
         time.sleep(0.5)
         action.key_up(Keys.ENTER).perform()
     
@@ -162,6 +162,7 @@ def get_total_pages(soup):
     return 1  # Default to 1 if pagination is not found
 
 def scrape_data(base_url, stop_flag):
+    driver = None
     try:
         options = uc.ChromeOptions()
         options.headless = False  # Set to False to see browser actions
@@ -248,3 +249,4 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
