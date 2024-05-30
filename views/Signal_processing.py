@@ -7,12 +7,18 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import subprocess
+import os
 
 def install_chrome():
-    # Install Chrome and ChromeDriver
-    subprocess.run(["apt-get", "update"])
-    subprocess.run(["apt-get", "install", "-y", "google-chrome-stable"])
-    subprocess.run(["apt-get", "install", "-y", "chromedriver"])
+    # Download and install Google Chrome
+    subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
+    subprocess.run(["sudo", "apt", "install", "./google-chrome-stable_current_amd64.deb", "-y"])
+
+    # Download and install ChromeDriver
+    subprocess.run(["wget", "https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip"])
+    subprocess.run(["unzip", "chromedriver_linux64.zip"])
+    subprocess.run(["sudo", "mv", "chromedriver", "/usr/bin/chromedriver"])
+    subprocess.run(["sudo", "chmod", "+x", "/usr/bin/chromedriver"])
 
 install_chrome()
 
@@ -260,5 +266,3 @@ def load_view():
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
 
-if __name__ == "__main__":
-    load_view()
