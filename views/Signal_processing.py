@@ -8,8 +8,8 @@ import time
 import pandas as pd
 import subprocess
 
-# Install Chrome and ChromeDriver
 def install_chrome():
+    # Install Chrome and ChromeDriver
     subprocess.run(["apt-get", "update"])
     subprocess.run(["apt-get", "install", "-y", "google-chrome-stable"])
     subprocess.run(["apt-get", "install", "-y", "chromedriver"])
@@ -260,4 +260,5 @@ def load_view():
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
 
-
+if __name__ == "__main__":
+    load_view()
