@@ -204,21 +204,22 @@ def scrape_zillow(search_url):
     finally:
         driver.quit()
 
-st.title("Zillow Property Scraper")
-search_url = st.text_input("Enter Zillow Search URL")
-
-if st.button("Start Scraping"):
-    st.session_state.stop_scraping = False
-    if search_url:
-        df = scrape_zillow(search_url)
-        if df is not None:
-            st.write("Scraping Results:")
-            st.dataframe(df)
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(label="Download CSV", data=csv, file_name='zillow_properties.csv', mime='text/csv')
-    else:
-        st.write("Please enter a valid URL.")
-
-if st.button("Stop Scraping"):
-    st.session_state.stop_scraping = True
-    st.write("Stopping scraping...")
+load_view():
+    st.title("Zillow Property Scraper")
+    search_url = st.text_input("Enter Zillow Search URL")
+    
+    if st.button("Start Scraping"):
+        st.session_state.stop_scraping = False
+        if search_url:
+            df = scrape_zillow(search_url)
+            if df is not None:
+                st.write("Scraping Results:")
+                st.dataframe(df)
+                csv = df.to_csv(index=False).encode('utf-8')
+                st.download_button(label="Download CSV", data=csv, file_name='zillow_properties.csv', mime='text/csv')
+        else:
+            st.write("Please enter a valid URL.")
+    
+    if st.button("Stop Scraping"):
+        st.session_state.stop_scraping = True
+        st.write("Stopping scraping...")
