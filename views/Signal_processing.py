@@ -7,16 +7,22 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import subprocess
-import os
+import urllib.request
+import zipfile
 
 def install_chrome():
     # Download and install Google Chrome
-    subprocess.run(["wget", "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"])
-    subprocess.run(["sudo", "apt", "install", "./google-chrome-stable_current_amd64.deb", "-y"])
+    chrome_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+    chrome_deb = "google-chrome-stable_current_amd64.deb"
+    urllib.request.urlretrieve(chrome_url, chrome_deb)
+    subprocess.run(["sudo", "apt", "install", "./" + chrome_deb, "-y"])
 
     # Download and install ChromeDriver
-    subprocess.run(["wget", "https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip"])
-    subprocess.run(["unzip", "chromedriver_linux64.zip"])
+    chromedriver_url = "https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip"
+    chromedriver_zip = "chromedriver_linux64.zip"
+    urllib.request.urlretrieve(chromedriver_url, chromedriver_zip)
+    with zipfile.ZipFile(chromedriver_zip, 'r') as zip_ref:
+        zip_ref.extractall(".")
     subprocess.run(["sudo", "mv", "chromedriver", "/usr/bin/chromedriver"])
     subprocess.run(["sudo", "chmod", "+x", "/usr/bin/chromedriver"])
 
