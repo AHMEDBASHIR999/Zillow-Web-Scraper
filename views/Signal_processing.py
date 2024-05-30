@@ -18,6 +18,7 @@ def get_driver():
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.binary_location = "/usr/bin/google-chrome"  # Path for Google Chrome binary
   
     
     return webdriver.Chrome(
