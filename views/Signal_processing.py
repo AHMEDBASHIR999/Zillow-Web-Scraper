@@ -6,6 +6,15 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
+import subprocess
+
+# Install Chrome and ChromeDriver
+def install_chrome():
+    subprocess.run(["apt-get", "update"])
+    subprocess.run(["apt-get", "install", "-y", "google-chrome-stable"])
+    subprocess.run(["apt-get", "install", "-y", "chromedriver"])
+
+install_chrome()
 
 def bypass_captcha(driver):
     while True:
@@ -250,4 +259,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
