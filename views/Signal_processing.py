@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.core.os_manager import ChromeType
 
 @st.cache_resource
 def get_driver():
@@ -18,11 +17,9 @@ def get_driver():
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.binary_location = "/usr/bin/google-chrome"  # Path for Google Chrome binary
-  
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
 
@@ -267,5 +264,4 @@ def load_view():
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
 
-if __name__ == "__main__":
-    load_view()
+
