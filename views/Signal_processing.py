@@ -9,9 +9,21 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 
 @st.cache_resource
 def get_driver():
+    # Find the correct ChromeDriver version based on the installed Chrome version
+    chrome_type = ChromeType.CHROMIUM
+    chrome_version = None
+    
+    try:
+        result = subprocess.run(["chromium-browser", "--version"], stdout=subprocess.PIPE)
+        chrome_version = result.stdout.decode("utf-8").split()[1]
+    except Exception as e:
+        st.write(f"Error finding Chromium version: {e}")
+
+    # Initialize Chrome options
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
@@ -19,7 +31,7 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service(ChromeDriverManager(chrome_type=chrome_type, version=chrome_version).install()),
         options=options
     )
 
