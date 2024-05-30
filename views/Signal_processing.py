@@ -20,11 +20,14 @@ def install_chrome():
     subprocess.run(["dpkg", "-x", chrome_deb, "./chrome"], check=True)
     os.environ["PATH"] += os.pathsep + os.path.abspath("./chrome/opt/google/chrome")
 
-    # Download and install ChromeDriver using webdriver_manager
+def install_chromedriver():
+    # Use webdriver_manager to install ChromeDriver
     chromedriver_path = ChromeDriverManager().install()
     return chromedriver_path
 
-chromedriver_path = install_chrome()
+# Install Chrome and ChromeDriver
+install_chrome()
+chromedriver_path = install_chromedriver()
 
 def bypass_captcha(driver):
     while True:
