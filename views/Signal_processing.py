@@ -1,7 +1,8 @@
 import streamlit as st
-import undetected_chromedriver.v2 as uc
+import undetected_chromedriver as uc
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
@@ -40,23 +41,23 @@ def press_key_multiple_times(driver, key, times):
 def apply_newest_filter(driver):
     try:
         body = driver.find_element(By.TAG_NAME, 'body')
-        for _ in range(19):
+        for _ in range(19): # Press Space Button 19 time
             body.send_keys(Keys.TAB)
             time.sleep(0.1)
         time.sleep(2)
         
         action = ActionChains(driver)
-        action.key_down(Keys.SPACE).perform()
+        action.key_down(Keys.SPACE).perform()  # Press Space Button 1 time
         time.sleep(0.5)
         action.key_up(Keys.SPACE).perform()
         time.sleep(2)
         
         for _ in range(4):
-            body.send_keys(Keys.TAB)
+            body.send_keys(Keys.TAB)  # Press TAB Button 4 time
             time.sleep(0.1)
         time.sleep(1)
         
-        action.key_down(Keys.ENTER).perform()
+        action.key_down(Keys.ENTER).perform() # Press Enter Button 1 time
         time.sleep(0.5)
         action.key_up(Keys.ENTER).perform()
     
@@ -161,7 +162,6 @@ def get_total_pages(soup):
     return 1  # Default to 1 if pagination is not found
 
 def scrape_data(base_url, stop_flag):
-    driver = None
     try:
         options = uc.ChromeOptions()
         options.headless = False  # Set to False to see browser actions
@@ -229,16 +229,16 @@ def load_view():
         st.success("Scraping completed successfully! ✔")
 
     if st.session_state.scraping:
-        if st.button("Stop Scraping", key="stop_button"):
+        if st.button("Stop Scraping"):
             st.session_state.scraping = False
             st.session_state.stop_flag = True
-            st.rerun()
+            st.experimental_rerun()
     else:
-        if st.button("Start Scraping", key="start_button"):
+        if st.button("Start Scraping"):
             if base_url:
                 st.session_state.scraping = True
                 st.session_state.stop_flag = False
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.write("Please enter a valid base URL.")
     
@@ -248,4 +248,3 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
