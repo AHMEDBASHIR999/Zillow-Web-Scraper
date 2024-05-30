@@ -165,6 +165,8 @@ def scrape_data(base_url, stop_flag):
     try:
         options = uc.ChromeOptions()
         options.headless = False  # Set to False to see browser actions
+        options.binary_location = "/usr/bin/google-chrome"  # Adjust the path as needed for your environment
+
         driver = uc.Chrome(options=options)
 
         driver.get(base_url)
@@ -248,5 +250,4 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
 
