@@ -14,12 +14,17 @@ import subprocess
 @st.cache_resource
 def get_driver():
     # Detect the Chrome version
-    try:
-        result = subprocess.run(["chromium-browser", "--version"], stdout=subprocess.PIPE)
-        chrome_version = result.stdout.decode("utf-8").split()[1]
-    except Exception as e:
-        st.write(f"Error finding Chromium version: {e}")
-        chrome_version = None
+    chrome_version = None
+    for browser_cmd in ["chromium-browser", "chromium"]:
+        try:
+            result = subprocess.run([browser_cmd, "--version"], stdout=subprocess.PIPE)
+            chrome_version = result.stdout.decode("utf-8").split()[1]
+            break
+        except FileNotFoundError:
+            continue
+    
+    if not chrome_version:
+        raise FileNotFoundError("Could not find Chromium browser executable.")
 
     options = Options()
     options.add_argument("--disable-gpu")
@@ -272,5 +277,4 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
 
