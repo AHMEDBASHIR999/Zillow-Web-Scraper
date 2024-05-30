@@ -1,13 +1,13 @@
 import streamlit as st
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 def bypass_captcha(driver):
     while True:
@@ -162,96 +162,63 @@ def get_total_pages(soup):
             return int(last_page_link.text)
     return 1  # Default to 1 if pagination is not found
 
-def scrape_data(base_url, stop_flag):
-    driver = None
+def scrape_zillow(search_url):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
     try:
-        options = webdriver.ChromeOptions()
-        options.headless = False  # Set to False to see browser actions
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
+        driver.get(search_url)
+        time.sleep(5)  # Wait for the page to load
         
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-
-        driver.get(base_url)
+        if "px-captcha" in driver.page_source:
+            bypass_captcha(driver)
+        
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         total_pages = get_total_pages(soup)
-
-        st.write(f"Total pages: {total_pages}")
-
+        
+        st.write(f"Total pages to scrape: {total_pages}")
+        
         data_list = []
-
-        for page in range(1, 2):
-            if st.session_state.get(stop_flag):
+        for page in range(1, total_pages + 1):
+            if st.session_state.get("stop_scraping"):
                 st.write("Scraping stopped by user.")
                 break
-            time.sleep(20)  # Delay of 20 seconds before opening each page
-            url = f'{base_url}{page}_p/'
-            st.write(f"Processing page: {page}")
-            driver.get(url)
-
-            apply_newest_filter(driver)
-
-            if "px-captcha" in driver.page_source:
-                bypass_captcha(driver)
-
-            press_key_multiple_times(driver, Keys.TAB, 150)
-
+            
+            current_url = f"{search_url}&page={page}"
+            driver.get(current_url)
+            time.sleep(5)  # Wait for the page to load
+            
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-            extract_data_from_page(driver, soup, data_list, stop_flag)
-
-        df = pd.DataFrame(data_list)
-
-        st.session_state.scraped_data = df
-
-        st.session_state.scraping = False
-        st.session_state.scraping_complete = True
-
-        st.write("Data extraction complete.✔")
-
-        st.dataframe(df)
-
-        driver.quit()
-
+            extract_data_from_page(driver, soup, data_list, "stop_scraping")
+        
+        st.write("Scraping completed.")
+        return pd.DataFrame(data_list)
     except Exception as e:
         st.write(f"An error occurred during scraping: {e}")
-        st.session_state.scraping = False
-        st.session_state.scraping_complete = False
-        if driver:
-            driver.quit()
+        return None
+    finally:
+        driver.quit()
 
-def load_view():
-    st.title("Zillow Property Data Scraper")
-    base_url = st.text_input("Enter the base URL for Zillow search (e.g., 'https://www.zillow.com/new-york-ny/')")
+st.title("Zillow Property Scraper")
+search_url = st.text_input("Enter Zillow Search URL")
 
-    if 'scraping' not in st.session_state:
-        st.session_state.scraping = False
-    if 'scraped_data' not in st.session_state:
-        st.session_state.scraped_data = None
-    if 'scraping_complete' not in st.session_state:
-        st.session_state.scraping_complete = False
-
-    if st.session_state.scraping_complete:
-        st.success("Scraping completed successfully! ✔")
-
-    if st.session_state.scraping:
-        if st.button("Stop Scraping", key="stop_button"):
-            st.session_state.scraping = False
-            st.session_state.stop_flag = True
-            st.rerun()
+if st.button("Start Scraping"):
+    st.session_state.stop_scraping = False
+    if search_url:
+        df = scrape_zillow(search_url)
+        if df is not None:
+            st.write("Scraping Results:")
+            st.dataframe(df)
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button(label="Download CSV", data=csv, file_name='zillow_properties.csv', mime='text/csv')
     else:
-        if st.button("Start Scraping", key="start_button"):
-            if base_url:
-                st.session_state.scraping = True
-                st.session_state.stop_flag = False
-                st.rerun()
-            else:
-                st.write("Please enter a valid base URL.")
-    
-    if st.session_state.scraping:
-        scrape_data(base_url, 'stop_flag')
-    
-    if st.session_state.scraped_data is not None:
-        csv = st.session_state.scraped_data.to_csv(index=False)
-        st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+        st.write("Please enter a valid URL.")
 
-
+if st.button("Stop Scraping"):
+    st.session_state.stop_scraping = True
+    st.write("Stopping scraping...")
