@@ -26,6 +26,9 @@ def get_driver():
     if not chrome_version:
         raise FileNotFoundError("Could not find Chromium browser executable.")
 
+    # Determine the correct ChromeDriver version for the installed browser
+    chrome_version_main = chrome_version.split('.')[0]
+
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
@@ -33,7 +36,7 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service(ChromeDriverManager(version=chrome_version_main).install()),
         options=options
     )
 
@@ -277,4 +280,3 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
