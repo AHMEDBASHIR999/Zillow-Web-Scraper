@@ -1,5 +1,5 @@
 import streamlit as st
-import undetected_chromedriver as uc
+import undetected_chromedriver.v2 as uc
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -189,7 +189,8 @@ def scrape_data(base_url, stop_flag):
         options.headless = False  # Set to False to see browser actions
         options.binary_location = "/usr/bin/google-chrome"  # Adjust the path as needed for your environment
 
-        driver = uc.Chrome(options=options)
+        # Explicitly specify the path to ChromeDriver
+        driver = uc.Chrome(options=options, driver_executable_path='/usr/local/bin/chromedriver')
 
         driver.get(base_url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
