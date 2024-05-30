@@ -16,7 +16,7 @@ def install_chrome():
     chrome_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
     chrome_deb = "google-chrome-stable_current_amd64.deb"
     urllib.request.urlretrieve(chrome_url, chrome_deb)
-    subprocess.run(["sudo", "apt-get", "install", "./" + chrome_deb, "-y"])
+    subprocess.run(["sudo", "apt-get", "install", "./" + chrome_deb, "-y"], check=True)
 
     # Download and install ChromeDriver
     chromedriver_url = "https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip"
@@ -24,8 +24,8 @@ def install_chrome():
     urllib.request.urlretrieve(chromedriver_url, chromedriver_zip)
     with zipfile.ZipFile(chromedriver_zip, 'r') as zip_ref:
         zip_ref.extractall(".")
-    subprocess.run(["sudo", "mv", "chromedriver", "/usr/local/bin/chromedriver"])
-    subprocess.run(["sudo", "chmod", "+x", "/usr/local/bin/chromedriver"])
+    subprocess.run(["sudo", "mv", "chromedriver", "/usr/local/bin/chromedriver"], check=True)
+    subprocess.run(["sudo", "chmod", "+x", "/usr/local/bin/chromedriver"], check=True)
 
 install_chrome()
 
@@ -257,13 +257,13 @@ def load_view():
         if st.button("Stop Scraping", key="stop_button"):
             st.session_state.scraping = False
             st.session_state.stop_flag = True
-            st.rerun()
+            st.experimental_rerun()
     else:
         if st.button("Start Scraping", key="start_button"):
             if base_url:
                 st.session_state.scraping = True
                 st.session_state.stop_flag = False
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.write("Please enter a valid base URL.")
     
@@ -273,5 +273,3 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
-
