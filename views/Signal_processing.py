@@ -1,32 +1,13 @@
 import streamlit as st
-import undetected_chromedriver as uc
-from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import subprocess
-import urllib.request
-import zipfile
-
-def install_chrome():
-    # Download and install Google Chrome
-    chrome_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-    chrome_deb = "google-chrome-stable_current_amd64.deb"
-    urllib.request.urlretrieve(chrome_url, chrome_deb)
-    subprocess.run(["sudo", "apt", "install", "./" + chrome_deb, "-y"])
-
-    # Download and install ChromeDriver
-    chromedriver_url = "https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip"
-    chromedriver_zip = "chromedriver_linux64.zip"
-    urllib.request.urlretrieve(chromedriver_url, chromedriver_zip)
-    with zipfile.ZipFile(chromedriver_zip, 'r') as zip_ref:
-        zip_ref.extractall(".")
-    subprocess.run(["sudo", "mv", "chromedriver", "/usr/bin/chromedriver"])
-    subprocess.run(["sudo", "chmod", "+x", "/usr/bin/chromedriver"])
-
-install_chrome()
 
 def bypass_captcha(driver):
     while True:
@@ -184,11 +165,12 @@ def get_total_pages(soup):
 def scrape_data(base_url, stop_flag):
     driver = None
     try:
-        options = uc.ChromeOptions()
+        options = webdriver.ChromeOptions()
         options.headless = False  # Set to False to see browser actions
-        options.binary_location = "/usr/bin/google-chrome"  # Adjust the path as needed for your environment
-
-        driver = uc.Chrome(options=options)
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
         driver.get(base_url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -271,3 +253,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
+
