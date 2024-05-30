@@ -2,7 +2,6 @@ import streamlit as st
 import undetected_chromedriver as uc
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
@@ -230,16 +229,16 @@ def load_view():
         st.success("Scraping completed successfully! ✔")
 
     if st.session_state.scraping:
-        if st.button("Stop Scraping"):
+        if st.button("Stop Scraping", key="stop_button"):
             st.session_state.scraping = False
             st.session_state.stop_flag = True
-            st.experimental_rerun()
+            st.rerun()
     else:
-        if st.button("Start Scraping"):
+        if st.button("Start Scraping", key="start_button"):
             if base_url:
                 st.session_state.scraping = True
                 st.session_state.stop_flag = False
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.write("Please enter a valid base URL.")
     
@@ -249,4 +248,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
