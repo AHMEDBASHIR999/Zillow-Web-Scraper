@@ -10,24 +10,19 @@ import subprocess
 import urllib.request
 import zipfile
 import os
-from webdriver_manager.chrome import ChromeDriverManager
 
-def install_chrome():
-    # Download and install Google Chrome
-    chrome_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-    chrome_deb = "google-chrome-stable_current_amd64.deb"
-    urllib.request.urlretrieve(chrome_url, chrome_deb)
-    subprocess.run(["dpkg", "-x", chrome_deb, "./chrome"], check=True)
-    os.environ["PATH"] += os.pathsep + os.path.abspath("./chrome/opt/google/chrome")
+def install_dependencies():
+    # Install necessary dependencies for Chrome and ChromeDriver
+    subprocess.run(["apt-get", "update"], check=True)
+    subprocess.run(["apt-get", "install", "-y", "wget", "curl", "gnupg2", "apt-transport-https", "libxss1", "libappindicator1", "libindicator7"], check=True)
+    subprocess.run(["wget", "-q", "-O", "-", "https://dl.google.com/linux/linux_signing_key.pub"], stdout=open("/usr/share/keyrings/google_linux_signing_key.gpg", "wb"), check=True)
+    subprocess.run(["sh", "-c", 'echo "deb [signed-by=/usr/share/keyrings/google_linux_signing_key.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list'], check=True)
+    subprocess.run(["apt-get", "update"], check=True)
+    subprocess.run(["apt-get", "install", "-y", "google-chrome-stable"], check=True)
+    subprocess.run(["apt-get", "install", "-y", "chromium-chromedriver"], check=True)
+    os.environ["PATH"] += os.pathsep + "/usr/lib/chromium-browser/"
 
-def install_chromedriver():
-    # Use webdriver_manager to install ChromeDriver
-    chromedriver_path = ChromeDriverManager().install()
-    return chromedriver_path
-
-# Install Chrome and ChromeDriver
-install_chrome()
-chromedriver_path = install_chromedriver()
+install_dependencies()
 
 def bypass_captcha(driver):
     while True:
@@ -187,10 +182,10 @@ def scrape_data(base_url, stop_flag):
     try:
         options = uc.ChromeOptions()
         options.headless = False  # Set to False to see browser actions
-        options.binary_location = "./chrome/opt/google/chrome/chrome"  # Adjust the path as needed for your environment
+        options.binary_location = "/usr/bin/google-chrome"  # Path for Google Chrome binary
 
         # Explicitly specify the path to ChromeDriver
-        driver = uc.Chrome(options=options, driver_executable_path=chromedriver_path)
+        driver = uc.Chrome(options=options, driver_executable_path="/usr/bin/chromedriver")
 
         driver.get(base_url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -273,4 +268,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
