@@ -8,58 +8,24 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import os
-import requests
-from zipfile import ZipFile
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
 
-def install_chromium():
-    os.system("apt-get update")
-    os.system("apt-get install -y chromium-browser")
-
-def download_chromedriver():
-    try:
-        # Ensure Chromium is installed
-        install_chromium()
-        
-        # Get the Chromium version
-        result = os.popen("chromium-browser --version").read().strip()
-        if not result:
-            raise Exception("Chromium browser not found")
-        chrome_version = result.split()[1]
-        chrome_major_version = chrome_version.split('.')[0]
-
-        # URL for ChromeDriver matching the detected Chrome version
-        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}.0/chromedriver_linux64.zip"
-
-        # Download ChromeDriver
-        r = requests.get(chromedriver_url, stream=True)
-        if r.status_code == 200:
-            with open("chromedriver.zip", 'wb') as f:
-                for chunk in r.iter_content(chunk_size=128):
-                    f.write(chunk)
-            with ZipFile("chromedriver.zip", 'r') as zip_ref:
-                zip_ref.extractall()
-            os.chmod("chromedriver", 0o755)
-            os.remove("chromedriver.zip")
-        else:
-            raise Exception(f"Failed to download ChromeDriver: {r.status_code}")
-    except Exception as e:
-        st.write(f"Error downloading ChromeDriver: {e}")
-
+# Function to install and get the driver
 @st.cache_resource
 def get_driver():
-    download_chromedriver()
-
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.binary_location = "/usr/bin/chromium-browser"
-
+    
     return webdriver.Chrome(
-        service=Service("./chromedriver"),
-        options=options
+        service=Service(
+            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+        ),
+        options=options,
     )
 
 def bypass_captcha(driver):
@@ -300,4 +266,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
