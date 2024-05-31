@@ -1,4 +1,4 @@
-import streamlit as st
+=import streamlit as st
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -8,33 +8,61 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-from webdriver_manager.chrome import ChromeDriverManager
 import subprocess
+import os
+import platform
+import requests
+from zipfile import ZipFile
+
+# Function to download the latest ChromeDriver version that matches the installed Chrome version
+def download_chromedriver():
+    try:
+        # Determine the platform
+        system = platform.system()
+        if system == "Linux":
+            os_name = "linux64"
+        elif system == "Darwin":
+            os_name = "mac64"
+        else:
+            os_name = "win32"
+
+        # Detect the Chrome version
+        result = subprocess.run(["chromium-browser", "--version"], stdout=subprocess.PIPE)
+        chrome_version = result.stdout.decode("utf-8").split()[1]
+
+        # Extract major version
+        chrome_major_version = chrome_version.split('.')[0]
+
+        # URL for ChromeDriver matching the detected Chrome version
+        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}/chromedriver_{os_name}.zip"
+
+        # Download ChromeDriver
+        r = requests.get(chromedriver_url, stream=True)
+        if r.status_code == 200:
+            with open("chromedriver.zip", 'wb') as f:
+                for chunk in r.iter_content(chunk_size=128):
+                    f.write(chunk)
+            with ZipFile("chromedriver.zip", 'r') as zip_ref:
+                zip_ref.extractall()
+            os.chmod("chromedriver", 0o755)
+            os.remove("chromedriver.zip")
+        else:
+            raise Exception(f"Failed to download ChromeDriver: {r.status_code}")
+    except Exception as e:
+        st.write(f"Error downloading ChromeDriver: {e}")
 
 @st.cache_resource
 def get_driver():
-    # Detect the Chrome version
-    chrome_version = None
-    for browser_cmd in ["chromium-browser", "chromium"]:
-        try:
-            result = subprocess.run([browser_cmd, "--version"], stdout=subprocess.PIPE)
-            chrome_version = result.stdout.decode("utf-8").split()[1]
-            break
-        except FileNotFoundError:
-            continue
-    
-    if not chrome_version:
-        raise FileNotFoundError("Could not find Chromium browser executable.")
+    download_chromedriver()
 
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-
-    # Install the latest ChromeDriver that matches the installed Chrome version
+    
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service("./chromedriver"),
         options=options
     )
 
