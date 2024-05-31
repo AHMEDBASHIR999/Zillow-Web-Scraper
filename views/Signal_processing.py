@@ -26,9 +26,6 @@ def get_driver():
     if not chrome_version:
         raise FileNotFoundError("Could not find Chromium browser executable.")
 
-    # Use a specific known compatible ChromeDriver version
-    chrome_driver_version = "114.0.5735.90"  # Adjust this version if necessary
-    
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
@@ -36,11 +33,9 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager(version=chrome_driver_version).install()),
+        service=Service(ChromeDriverManager(version="115.0.5790.102").install()),  # Try a compatible version
         options=options
     )
-
-driver = get_driver()
 
 def bypass_captcha(driver):
     while True:
