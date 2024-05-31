@@ -11,5 +11,5 @@ torchvision==0.18.0
 undetected-chromedriver==3.5.5
 webdriver-manager==3.8.6
 requests==2.28.2
-seleniumbase
+
 
