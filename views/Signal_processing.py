@@ -12,14 +12,15 @@ import os
 import requests
 from zipfile import ZipFile
 
-# Function to install Chromium
 def install_chromium():
     os.system("apt-get update")
     os.system("apt-get install -y chromium-browser")
 
-# Function to download the correct ChromeDriver version
 def download_chromedriver():
     try:
+        # Ensure Chromium is installed
+        install_chromium()
+        
         # Get the Chromium version
         result = os.popen("chromium-browser --version").read().strip()
         if not result:
@@ -47,7 +48,6 @@ def download_chromedriver():
 
 @st.cache_resource
 def get_driver():
-    install_chromium()
     download_chromedriver()
 
     options = Options()
