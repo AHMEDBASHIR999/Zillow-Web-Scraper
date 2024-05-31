@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.utils import ChromeType
 
 # Function to install and get the driver
 @st.cache_resource
@@ -23,7 +22,7 @@ def get_driver():
     
     return webdriver.Chrome(
         service=Service(
-            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+            ChromeDriverManager().install()
         ),
         options=options,
     )
@@ -266,4 +265,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
