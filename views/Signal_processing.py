@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import streamlit as st
 import pandas as pd
@@ -9,15 +10,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 
-# Ensure Geckodriver and Firefox are installed
+# Function to install Geckodriver
 @st.experimental_singleton
-def install_ff():
-    os.system('sudo apt-get update')
-    os.system('sudo apt-get install -y firefox-esr')
-    os.system('sbase install geckodriver')
-    os.system('ln -s /home/appuser/venv/lib/python3.11/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
+def install_geckodriver():
+    url = 'https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz'
+    subprocess.run(['wget', url, '-O', 'geckodriver.tar.gz'])
+    subprocess.run(['tar', '-xzf', 'geckodriver.tar.gz'])
+    subprocess.run(['chmod', '+x', 'geckodriver'])
+    subprocess.run(['mv', 'geckodriver', '/home/appuser/venv/bin/'])
 
-_ = install_ff()
+_ = install_geckodriver()
 
 # Function to get the driver
 @st.cache_resource
@@ -28,7 +30,7 @@ def get_driver():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     
-    return webdriver.Firefox(options=options)
+    return webdriver.Firefox(options=options, executable_path='/home/appuser/venv/bin/geckodriver')
 
 def bypass_captcha(driver):
     while True:
@@ -268,5 +270,4 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
 
