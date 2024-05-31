@@ -8,26 +8,25 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import subprocess
 import os
 import requests
 from zipfile import ZipFile
 
+# Function to install Chromium
 def install_chromium():
     os.system("apt-get update")
     os.system("apt-get install -y chromium-browser")
 
+# Function to download the correct ChromeDriver version
 def download_chromedriver():
     try:
-        # Detect the Chrome version
-        result = subprocess.run(["chromium-browser", "--version"], stdout=subprocess.PIPE)
-        chrome_version = result.stdout.decode("utf-8").split()[1]
-
-        # Extract major version
+        # Get the Chromium version
+        result = os.popen("chromium-browser --version").read()
+        chrome_version = result.split()[1]
         chrome_major_version = chrome_version.split('.')[0]
 
         # URL for ChromeDriver matching the detected Chrome version
-        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}/chromedriver_linux64.zip"
+        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}.0/chromedriver_linux64.zip"
 
         # Download ChromeDriver
         r = requests.get(chromedriver_url, stream=True)
@@ -299,3 +298,4 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
