@@ -10,22 +10,15 @@ import time
 import pandas as pd
 import subprocess
 import os
-import platform
 import requests
 from zipfile import ZipFile
 
-# Function to download the latest ChromeDriver version that matches the installed Chrome version
+def install_chromium():
+    os.system("apt-get update")
+    os.system("apt-get install -y chromium-browser")
+
 def download_chromedriver():
     try:
-        # Determine the platform
-        system = platform.system()
-        if system == "Linux":
-            os_name = "linux64"
-        elif system == "Darwin":
-            os_name = "mac64"
-        else:
-            os_name = "win32"
-
         # Detect the Chrome version
         result = subprocess.run(["chromium-browser", "--version"], stdout=subprocess.PIPE)
         chrome_version = result.stdout.decode("utf-8").split()[1]
@@ -34,7 +27,7 @@ def download_chromedriver():
         chrome_major_version = chrome_version.split('.')[0]
 
         # URL for ChromeDriver matching the detected Chrome version
-        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}/chromedriver_{os_name}.zip"
+        chromedriver_url = f"https://chromedriver.storage.googleapis.com/{chrome_major_version}/chromedriver_linux64.zip"
 
         # Download ChromeDriver
         r = requests.get(chromedriver_url, stream=True)
@@ -53,6 +46,7 @@ def download_chromedriver():
 
 @st.cache_resource
 def get_driver():
+    install_chromium()
     download_chromedriver()
 
     options = Options()
@@ -60,7 +54,8 @@ def get_driver():
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    
+    options.binary_location = "/usr/bin/chromium-browser"
+
     return webdriver.Chrome(
         service=Service("./chromedriver"),
         options=options
@@ -304,5 +299,3 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
-
