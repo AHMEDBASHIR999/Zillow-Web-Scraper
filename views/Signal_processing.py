@@ -1,5 +1,4 @@
 import streamlit as st
-import subprocess
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -9,28 +8,33 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-import os
-
-# Function to download the latest ChromeDriver
-def download_chromedriver():
-    chromedriver_url = "https://chromedriver.storage.googleapis.com/120.0.6072.90/chromedriver_linux64.zip"
-    os.system(f"wget {chromedriver_url}")
-    os.system("unzip chromedriver_linux64.zip")
-    os.system("chmod +x chromedriver")
-    os.system("mv chromedriver /usr/local/bin/")
+from webdriver_manager.chrome import ChromeDriverManager
+import subprocess
 
 @st.cache_resource
 def get_driver():
-    download_chromedriver()
+    # Detect the Chrome version
+    chrome_version = None
+    for browser_cmd in ["chromium-browser", "chromium"]:
+        try:
+            result = subprocess.run([browser_cmd, "--version"], stdout=subprocess.PIPE)
+            chrome_version = result.stdout.decode("utf-8").split()[1]
+            break
+        except FileNotFoundError:
+            continue
     
+    if not chrome_version:
+        raise FileNotFoundError("Could not find Chromium browser executable.")
+
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    
+
+    # Install the latest ChromeDriver that matches the installed Chrome version
     return webdriver.Chrome(
-        service=Service("/usr/local/bin/chromedriver"),
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
 
@@ -272,3 +276,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
+
