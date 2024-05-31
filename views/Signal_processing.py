@@ -299,3 +299,5 @@ def load_view():
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
 
+if __name__ == "__main__":
+    load_view()
