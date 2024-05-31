@@ -21,7 +21,9 @@ def install_chromium():
 def download_chromedriver():
     try:
         # Get the Chromium version
-        result = os.popen("chromium-browser --version").read()
+        result = os.popen("chromium-browser --version").read().strip()
+        if not result:
+            raise Exception("Chromium browser not found")
         chrome_version = result.split()[1]
         chrome_major_version = chrome_version.split('.')[0]
 
@@ -299,5 +301,3 @@ def load_view():
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
 
-if __name__ == "__main__":
-    load_view()
