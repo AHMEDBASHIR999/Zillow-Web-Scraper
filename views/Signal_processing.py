@@ -9,20 +9,16 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import get_browser_version_from_os
 import subprocess
 
 @st.cache_resource
 def get_driver():
-    # Detect the Chrome version
-    chrome_version = None
-    for browser_cmd in ["chromium-browser", "chromium"]:
-        try:
-            result = subprocess.run([browser_cmd, "--version"], stdout=subprocess.PIPE)
-            chrome_version = result.stdout.decode("utf-8").split()[1]
-            break
-        except FileNotFoundError:
-            continue
-    
+    try:
+        chrome_version = get_browser_version_from_os("google-chrome")
+    except ValueError:
+        chrome_version = get_browser_version_from_os("chromium-browser")
+
     if not chrome_version:
         raise FileNotFoundError("Could not find Chromium browser executable.")
 
@@ -33,9 +29,11 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager(version="115.0.5790.102").install()),  # Try a compatible version
+        service=Service(ChromeDriverManager().install()),
         options=options
     )
+
+driver = get_driver()
 
 def bypass_captcha(driver):
     while True:
