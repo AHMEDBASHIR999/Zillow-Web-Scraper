@@ -13,24 +13,36 @@ from bs4 import BeautifulSoup
 # Function to install Geckodriver
 @st.experimental_singleton
 def install_geckodriver():
-    url = 'https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz'
-    subprocess.run(['wget', url, '-O', 'geckodriver.tar.gz'])
-    subprocess.run(['tar', '-xzf', 'geckodriver.tar.gz'])
-    subprocess.run(['chmod', '+x', 'geckodriver'])
-    subprocess.run(['mv', 'geckodriver', '/home/appuser/venv/bin/'])
+    try:
+        st.write("Installing Geckodriver...")
+        url = 'https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz'
+        subprocess.run(['wget', url, '-O', 'geckodriver.tar.gz'])
+        subprocess.run(['tar', '-xzf', 'geckodriver.tar.gz'])
+        subprocess.run(['chmod', '+x', 'geckodriver'])
+        subprocess.run(['mv', 'geckodriver', '/home/appuser/venv/bin/'])
+        st.write("Geckodriver installed.")
+    except Exception as e:
+        st.write(f"Error installing Geckodriver: {e}")
 
 _ = install_geckodriver()
 
 # Function to get the driver
 @st.cache_resource
 def get_driver():
-    options = Options()
-    options.add_argument("--disable-gpu")
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    
-    return webdriver.Firefox(options=options, executable_path='/home/appuser/venv/bin/geckodriver')
+    try:
+        st.write("Setting up Firefox driver...")
+        options = Options()
+        options.add_argument("--disable-gpu")
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        
+        driver = webdriver.Firefox(options=options, executable_path='/home/appuser/venv/bin/geckodriver')
+        st.write("Firefox driver set up successfully.")
+        return driver
+    except Exception as e:
+        st.write(f"Error setting up Firefox driver: {e}")
+        return None
 
 def bypass_captcha(driver):
     while True:
@@ -189,6 +201,11 @@ def scrape_data(base_url, stop_flag):
     driver = None
     try:
         driver = get_driver()
+        if not driver:
+            st.write("Failed to initialize the driver.")
+            return
+
+        st.write("Navigating to the base URL...")
         driver.get(base_url)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         total_pages = get_total_pages(soup)
