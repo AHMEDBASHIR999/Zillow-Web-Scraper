@@ -1,38 +1,32 @@
 import os
-import shutil
-import subprocess
 import time
 import streamlit as st
+import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
-import pandas as pd
-from webdriver_manager.chrome import ChromeDriverManager
 
-# Ensure Chromium and ChromeDriver are installed
-def install_chromium():
-    if not shutil.which("chromium-browser"):
-        subprocess.run(["sudo", "apt-get", "update"])
-        subprocess.run(["sudo", "apt-get", "install", "chromium", "chromium-driver", "-y"])
+# Ensure Geckodriver and Firefox are installed
+@st.experimental_singleton
+def install_ff():
+    os.system('sbase install geckodriver')
+    os.system('ln -s /home/appuser/venv/lib/python3.11/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
 
+_ = install_ff()
+
+# Function to get the driver
 @st.cache_resource
 def get_driver():
-    install_chromium()
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.binary_location = "/usr/bin/chromium-browser"
     
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options,
-    )
+    return webdriver.Firefox(options=options)
 
 def bypass_captcha(driver):
     while True:
@@ -272,4 +266,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
