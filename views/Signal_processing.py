@@ -1,4 +1,5 @@
 import streamlit as st
+import subprocess
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -8,24 +9,20 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
-from webdriver_manager.chrome import ChromeDriverManager
-import subprocess
+import os
+
+# Function to download the latest ChromeDriver
+def download_chromedriver():
+    chromedriver_url = "https://chromedriver.storage.googleapis.com/120.0.6072.90/chromedriver_linux64.zip"
+    os.system(f"wget {chromedriver_url}")
+    os.system("unzip chromedriver_linux64.zip")
+    os.system("chmod +x chromedriver")
+    os.system("mv chromedriver /usr/local/bin/")
 
 @st.cache_resource
 def get_driver():
-    # Detect the Chrome version
-    chrome_version = None
-    for browser_cmd in ["chromium-browser", "chromium"]:
-        try:
-            result = subprocess.run([browser_cmd, "--version"], stdout=subprocess.PIPE)
-            chrome_version = result.stdout.decode("utf-8").split()[1]
-            break
-        except FileNotFoundError:
-            continue
+    download_chromedriver()
     
-    if not chrome_version:
-        raise FileNotFoundError("Could not find Chromium browser executable.")
-
     options = Options()
     options.add_argument("--disable-gpu")
     options.add_argument("--headless")
@@ -33,7 +30,7 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     
     return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service("/usr/local/bin/chromedriver"),
         options=options
     )
 
