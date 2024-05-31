@@ -3,11 +3,14 @@ import subprocess
 import time
 import streamlit as st
 import pandas as pd
-from seleniumbase import Driver
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
+from webdriver_manager.firefox import GeckoDriverManager
 
 # Function to install Geckodriver and Firefox
 @st.experimental_singleton
@@ -16,7 +19,6 @@ def install_geckodriver_and_firefox():
         st.write("Installing Geckodriver and Firefox...")
         subprocess.run(['apt-get', 'update'])
         subprocess.run(['apt-get', 'install', '-y', 'firefox-esr'])
-        subprocess.run(['sbase', 'install', 'geckodriver'])
         st.write("Geckodriver and Firefox installed.")
     except Exception as e:
         st.write(f"Error installing Geckodriver and Firefox: {e}")
@@ -28,7 +30,15 @@ _ = install_geckodriver_and_firefox()
 def get_driver():
     try:
         st.write("Setting up Firefox driver...")
-        driver = Driver(browser='firefox', headless=True)
+        options = Options()
+        options.binary_location = '/usr/bin/firefox'
+        options.add_argument("--disable-gpu")
+        options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        
+        service = Service(GeckoDriverManager().install())
+        driver = webdriver.Firefox(options=options, service=service)
         st.write("Firefox driver set up successfully.")
         return driver
     except Exception as e:
@@ -278,3 +288,6 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
+if __name__ == "__main__":
+    load_view()
