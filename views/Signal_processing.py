@@ -12,13 +12,13 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 from webdriver_manager.chrome import ChromeDriverManager
 
-# Function to install Chrome
+# Function to install Google Chrome
 @st.experimental_singleton
 def install_chrome():
     try:
         st.write("Installing Google Chrome...")
-        subprocess.run(['apt-get', 'update'])
-        subprocess.run(['apt-get', 'install', '-y', 'google-chrome-stable'])
+        subprocess.run(['wget', 'https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb'], check=True)
+        subprocess.run(['sudo', 'apt-get', 'install', './google-chrome-stable_current_amd64.deb', '-y'], check=True)
         st.write("Google Chrome installed.")
     except Exception as e:
         st.write(f"Error installing Google Chrome: {e}")
