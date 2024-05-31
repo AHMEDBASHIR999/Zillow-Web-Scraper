@@ -8,6 +8,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.firefox.service import Service
 from bs4 import BeautifulSoup
 
 # Function to install Geckodriver
@@ -37,7 +38,8 @@ def get_driver():
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         
-        driver = webdriver.Firefox(options=options, executable_path='/home/appuser/venv/bin/geckodriver')
+        service = Service(executable_path='/home/appuser/venv/bin/geckodriver')
+        driver = webdriver.Firefox(options=options, service=service)
         st.write("Firefox driver set up successfully.")
         return driver
     except Exception as e:
@@ -287,4 +289,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
