@@ -4,45 +4,45 @@ import time
 import streamlit as st
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
-from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 
-# Function to install Geckodriver and Firefox
+# Function to install Chrome
 @st.experimental_singleton
-def install_geckodriver_and_firefox():
+def install_chrome():
     try:
-        st.write("Installing Geckodriver and Firefox...")
+        st.write("Installing Google Chrome...")
         subprocess.run(['apt-get', 'update'])
-        subprocess.run(['apt-get', 'install', '-y', 'firefox-esr'])
-        st.write("Geckodriver and Firefox installed.")
+        subprocess.run(['apt-get', 'install', '-y', 'google-chrome-stable'])
+        st.write("Google Chrome installed.")
     except Exception as e:
-        st.write(f"Error installing Geckodriver and Firefox: {e}")
+        st.write(f"Error installing Google Chrome: {e}")
 
-_ = install_geckodriver_and_firefox()
+_ = install_chrome()
 
 # Function to get the driver
 @st.cache_resource
 def get_driver():
     try:
-        st.write("Setting up Firefox driver...")
+        st.write("Setting up Chrome driver...")
         options = Options()
-        options.binary_location = '/usr/bin/firefox'
+        options.binary_location = '/usr/bin/google-chrome'
         options.add_argument("--disable-gpu")
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         
-        service = Service(GeckoDriverManager().install())
-        driver = webdriver.Firefox(options=options, service=service)
-        st.write("Firefox driver set up successfully.")
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(options=options, service=service)
+        st.write("Chrome driver set up successfully.")
         return driver
     except Exception as e:
-        st.write(f"Error setting up Firefox driver: {e}")
+        st.write(f"Error setting up Chrome driver: {e}")
         return None
 
 def bypass_captcha(driver):
@@ -288,4 +288,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
