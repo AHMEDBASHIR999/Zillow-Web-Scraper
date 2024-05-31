@@ -3,9 +3,7 @@ import subprocess
 import time
 import streamlit as st
 import pandas as pd
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+from seleniumbase import Driver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -18,11 +16,7 @@ def install_geckodriver_and_firefox():
         st.write("Installing Geckodriver and Firefox...")
         subprocess.run(['apt-get', 'update'])
         subprocess.run(['apt-get', 'install', '-y', 'firefox-esr'])
-        url = 'https://github.com/mozilla/geckodriver/releases/download/v0.30.0/geckodriver-v0.30.0-linux64.tar.gz'
-        subprocess.run(['wget', url, '-O', 'geckodriver.tar.gz'])
-        subprocess.run(['tar', '-xzf', 'geckodriver.tar.gz'])
-        subprocess.run(['chmod', '+x', 'geckodriver'])
-        subprocess.run(['mv', 'geckodriver', '/home/appuser/venv/bin/'])
+        subprocess.run(['sbase', 'install', 'geckodriver'])
         st.write("Geckodriver and Firefox installed.")
     except Exception as e:
         st.write(f"Error installing Geckodriver and Firefox: {e}")
@@ -34,15 +28,7 @@ _ = install_geckodriver_and_firefox()
 def get_driver():
     try:
         st.write("Setting up Firefox driver...")
-        options = Options()
-        options.binary_location = '/usr/bin/firefox'
-        options.add_argument("--disable-gpu")
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        
-        service = Service(executable_path='/home/appuser/venv/bin/geckodriver')
-        driver = webdriver.Firefox(options=options, service=service)
+        driver = Driver(browser='firefox', headless=True)
         st.write("Firefox driver set up successfully.")
         return driver
     except Exception as e:
@@ -292,5 +278,3 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
-
-
