@@ -12,10 +12,10 @@ from bs4 import BeautifulSoup
 # Ensure Geckodriver and Firefox are installed
 @st.experimental_singleton
 def install_ff():
-    os.system('sbase install geckodriver')
-    os.system('ln -s /home/appuser/venv/lib/python3.11/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
     os.system('sudo apt-get update')
     os.system('sudo apt-get install -y firefox-esr')
+    os.system('sbase install geckodriver')
+    os.system('ln -s /home/appuser/venv/lib/python3.11/site-packages/seleniumbase/drivers/geckodriver /home/appuser/venv/bin/geckodriver')
 
 _ = install_ff()
 
@@ -268,4 +268,5 @@ def load_view():
     if st.session_state.scraped_data is not None:
         csv = st.session_state.scraped_data.to_csv(index=False)
         st.download_button(label="Download data as CSV", data=csv, file_name='property_data.csv', mime='text/csv')
+
 
