@@ -1,4 +1,5 @@
 python3-distutils
 chromium
 firefox-esr
-google-chrome-stable
+wget
+
